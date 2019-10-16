@@ -8,34 +8,34 @@ koniecx = rozmiarx
 koniecy = rozmiary
 
 class kratka:
-    def __init__(self,x,y,g,rodzic):
+    def __init__(self, x, y, g, rodzic):
         self.x = x
         self.y = y
         self.g = g
         self.rodzic = rodzic
-        self.h = dystans(x,y)
+        self.h = dystans(x, y)
         self.f = self.g + self.h
 
-def dystans(x,y):
+def dystans(x, y):
     wynik = math.sqrt(pow(x-koniecx, 2) + pow(y-koniecy, 2))
     return wynik
 
 def generujMapeTest():
     wynik = []
-    for i in range(0,rozmiarx+1):
+    for i in range(0, rozmiarx+1):
         wiersz = []
-        for j in range(0,rozmiary+1):
+        for j in range(0, rozmiary+1):
             wiersz.append(0)
         wynik.append(wiersz)
     return wynik
 
 def generujMape():
-    plik = open("grid.txt","r")
+    plik = open("grid.txt", "r")
     lista = []
     for i in range(rozmiarx+1):
         wiersz = []
         linia = plik.readline()
-        for j in range(0,(rozmiary+1)*2,2):
+        for j in range(0, (rozmiary+1)*2, 2):
             wiersz.append(int(linia[j]))
         lista.append(wiersz)
     lista.reverse()
@@ -47,6 +47,12 @@ def wypiszMape(mapa):
             print(str(kratka), end = ' ')
         print('')
 
+def czyJest(lista,kratka):
+    for a in lista:
+        if kratka.x == a.x and kratka.y == a.y:
+            return True
+    return False
+
 def kierunki(rodzic):
     wynik = []
     for (i,j) in [(0,1),(1,0),(0,-1),(-1,0)]:
@@ -57,33 +63,35 @@ def kierunki(rodzic):
             wynik.append(xy)
     return wynik
 
-def dodajKratke(lista,kratka):
+def dodajKratke(kratka):
     flaga = 0
-    for a in lista:
-        if kratka.x == a.x and kratka.y == a.y:
-            if kratka.f < a.f:
-                a = kratka
-                print("dodano do otwartej (" + str(kratka.x) + ',' + str(kratka.y) + ')')
-            flaga = 1
-    if not flaga:
-        lista.append(kratka)
-        print("dodano do otwartej(" + str(kratka.x) + ',' + str(kratka.y) + ')')
+    if not czyJest(zamknieta, kratka):
+        for a in otwarta:
+            if kratka.x == a.x and kratka.y == a.y:
+                if kratka.f <= a.f:
+                    a = kratka
+                    print("dodano do otwartej (" + str(kratka.x) + ',' + str(kratka.y) + ')')
+                flaga = 1
+        if not flaga:
+            otwarta.append(kratka)
+            print("dodano do otwartej (" + str(kratka.x) + ',' + str(kratka.y) + ')')
 
-def stworzDzieci(lista,rodzic):
+def stworzDzieci(rodzic):
     for kierunek in kierunki(rodzic):
         if mapa[kierunek[0]][kierunek[1]] == 0:
-            print("dziala")
             nowa = kratka(kierunek[0], kierunek[1], rodzic.g + 1, rodzic)
             print("stworzono (" + str(nowa.x) + ',' + str(nowa.y) + ')')
-            dodajKratke(lista,nowa)
+            dodajKratke(nowa)
 
-def znajdzMinF(lista):
-    wynik = lista[0]
-    for a in lista:
+def znajdzMinF():
+    wynik = otwarta[0]
+    for a in otwarta:
         if a.f <= wynik.f:
             wynik = a
-    lista.remove(wynik)
-    return wynik
+    otwarta.remove(wynik)
+    print("usunieto z otwartej (" + str(wynik.x) + ', ' + str(wynik.y) + ')')
+    zamknieta.append(wynik)
+    print("dodano do zamknietej (" + str(wynik.x) + ',' + str(wynik.y) + ')')
 
 def wypiszWsp(kratka):
     print('(' + str(kratka.x) + ', ' + str(kratka.y) + ')')
@@ -96,9 +104,6 @@ start = kratka(startx,starty,0,None)
 zamknieta = []
 zamknieta.append(start)
 while True:
-    stworzDzieci(otwarta,zamknieta[-1])
-    zamknieta.append(znajdzMinF(otwarta))
-    print("dodano do zamknietej (" + str(zamknieta[-1].x) + ',' + str(zamknieta[-1].y) + ')')
     if zamknieta[-1].x == koniecx and zamknieta[-1].y == koniecy:
         print("ZNALEZIONO")
         wypiszMape(mapa)
@@ -109,9 +114,10 @@ while True:
             iterator = iterator.rodzic
         wypiszMape(mapa)
         break
-    else:
-        print("NIE")
-        print(str(zamknieta[-1].x) + ' ' + str(zamknieta[-1].y))
-        if not otwarta:
+    stworzDzieci(zamknieta[-1])
+    znajdzMinF()
+    if not otwarta:
             print("koniec")
             break
+    print("w otwartej jest " + str(len(otwarta)))
+    print("w zamknietej jest " + str(len(zamknieta)))
