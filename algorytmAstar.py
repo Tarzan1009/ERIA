@@ -89,9 +89,10 @@ mapa = generujMape()
 otwarta = []
 start = kratka(startx,starty,0,None)
 zamknieta = []
-zamknieta.append(start)
+otwarta.append(start)
 
 while True:
+    znajdzMinF()
     if zamknieta[-1].x == koniecx and zamknieta[-1].y == koniecy:
         print("ZNALEZIONO")
         wypiszMape(mapa)
@@ -103,7 +104,6 @@ while True:
         wypiszMape(mapa)
         break
     stworzDzieci(zamknieta[-1])
-    znajdzMinF()
     if not otwarta:
         print("koniec")
         break
